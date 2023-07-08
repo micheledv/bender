@@ -347,6 +347,24 @@ public class CPU {
                 setStatus(stackPop());
                 return 4;
             }
+            case (byte) 0x29 -> { // AND #nn
+                a &= fetchByte();
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                return 2;
+            }
+            case (byte) 0x25 -> { // AND nn
+                a &= memory.readByte((short) (fetchByte() & 0xFF));
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                return 3;
+            }
+            case (byte) 0x35 -> { // AND nn,X
+                a &= memory.readByte((short) ((fetchByte() & 0xFF) + x));
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                return 4;
+            }
             default -> throw new UnknownOpcodeException(opcode);
         }
     }

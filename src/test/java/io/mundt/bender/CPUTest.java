@@ -712,4 +712,55 @@ public class CPUTest extends TestCase {
         assertEquals((byte) 0x10, cpu.sp); // SP++
         assertEquals(4, cycles); // 4 cycles
     }
+
+    public void testANDImmediate() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x29); // AND nn
+        memory.writeByte((short) 0x1235, (byte) 0x3C); // nn = 0x3C
+        cpu.a = (byte) 0xF0;
+        cpu.negative = true;
+        cpu.zero = true;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x30, cpu.a); // A = A & nn
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(2, cycles); // 2 cycles
+    }
+
+    public void testANDZeroPage() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x25); // AND nn
+        memory.writeByte((short) 0x1235, (byte) 0xFF); // nn = 0xFF
+        memory.writeByte((short) 0x00FF, (byte) 0x3C); // [nn] = 0x3C
+        cpu.a = (byte) 0xF0;
+        cpu.negative = true;
+        cpu.zero = true;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x30, cpu.a); // A = A & [nn]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(3, cycles); // 3 cycles
+    }
+
+    public void testANDZeroPageX() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x35); // AND nn,X
+        memory.writeByte((short) 0x1235, (byte) 0x80); // nn = 0x80
+        memory.writeByte((short) 0x0084, (byte) 0x3C); // [nn+X] = 0x3C
+        cpu.a = (byte) 0xF0;
+        cpu.x = (byte) 0x04;
+        cpu.negative = true;
+        cpu.zero = true;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x30, cpu.a); // A = A & [nn+X]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(4, cycles); // 4 cycles
+    }
 }
