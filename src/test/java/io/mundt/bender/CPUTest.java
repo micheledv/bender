@@ -638,4 +638,78 @@ public class CPUTest extends TestCase {
         assertEquals((byte) 0x84, cpu.a); // A = Y
         assertEquals(2, cycles); // 2 cycles
     }
+
+    public void testTSX() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0xBA); // TSX
+        cpu.sp = (byte) 0x84;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.x); // X = SP
+        assertEquals(2, cycles); // 2 cycles
+    }
+
+    public void testTXS() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x9A); // TXS
+        cpu.x = (byte) 0x84;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.sp); // SP = X
+        assertEquals(2, cycles); // 2 cycles
+    }
+
+    public void testPHA() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x48); // PHA
+        cpu.a = (byte) 0x84;
+        cpu.sp = (byte) 0x10;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, memory.readByte((short) 0x0110)); // [SP] = A
+        assertEquals((byte) 0x0F, cpu.sp); // SP--
+        assertEquals(3, cycles); // 3 cycles
+    }
+
+    public void testPHP() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x08); // PHP
+        cpu.setStatus((byte) 0x84);
+        cpu.sp = (byte) 0x10;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, memory.readByte((short) 0x0110)); // [SP] = P
+        assertEquals((byte) 0x0F, cpu.sp); // SP--
+        assertEquals(3, cycles); // 3 cycles
+    }
+
+    public void testPLA() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x68); // PLA
+        memory.writeByte((short) 0x0110, (byte) 0x84); // [SP] = A
+        cpu.sp = (byte) 0x0F;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.a); // A = [SP]
+        assertEquals((byte) 0x10, cpu.sp); // SP++
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testPLP() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x28); // PLP
+        memory.writeByte((short) 0x0110, (byte) 0x84); // [SP] = P
+        cpu.sp = (byte) 0x0F;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.getStatus()); // P = [SP]
+        assertEquals((byte) 0x10, cpu.sp); // SP++
+        assertEquals(4, cycles); // 4 cycles
+    }
 }

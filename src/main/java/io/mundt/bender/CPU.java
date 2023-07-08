@@ -319,6 +319,34 @@ public class CPU {
                 negative = (a & 0x80) != 0;
                 return 2;
             }
+            case (byte) 0xBA -> { // TSX
+                x = sp;
+                zero = x == 0;
+                negative = (x & 0x80) != 0;
+                return 2;
+            }
+            case (byte) 0x9A -> { // TXS
+                sp = x;
+                return 2;
+            }
+            case (byte) 0x48 -> { // PHA
+                stackPush(a);
+                return 3;
+            }
+            case (byte) 0x08 -> { // PHP
+                stackPush(getStatus());
+                return 3;
+            }
+            case (byte) 0x68 -> { // PLA
+                a = stackPop();
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                return 4;
+            }
+            case (byte) 0x28 -> { // PLP
+                setStatus(stackPop());
+                return 4;
+            }
             default -> throw new UnknownOpcodeException(opcode);
         }
     }
