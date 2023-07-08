@@ -104,6 +104,78 @@ public class CPU {
                     return 5;
                 }
             }
+            case (byte) 0xA2 -> { // LDX #nn
+                x = fetchByte();
+                zeroFlag = x == 0;
+                negativeFlag = (x & 0x80) != 0;
+                return 2;
+            }
+            case (byte) 0xA6 -> { // LDX nn
+                x = memory.readByte(fetchByte());
+                zeroFlag = x == 0;
+                negativeFlag = (x & 0x80) != 0;
+                return 3;
+            }
+            case (byte) 0xB6 -> { // LDX nn,Y
+                x = memory.readByte((short) (fetchByte() + y));
+                zeroFlag = x == 0;
+                negativeFlag = (x & 0x80) != 0;
+                return 4;
+            }
+            case (byte) 0xAE -> { // LDX nnnn
+                x = memory.readByte(fetchWord());
+                zeroFlag = x == 0;
+                negativeFlag = (x & 0x80) != 0;
+                return 4;
+            }
+            case (byte) 0xBE -> { // LDX nnnn,Y
+                short absoluteAddress = fetchWord();
+                short effectiveAddress = (short) (absoluteAddress + y);
+                x = memory.readByte(effectiveAddress);
+                zeroFlag = x == 0;
+                negativeFlag = (x & 0x80) != 0;
+                if ((effectiveAddress & 0xFF00) != (absoluteAddress & 0xFF00)) {
+                    return 5;
+                } else {
+                    return 4;
+                }
+            }
+            case (byte) 0xA0 -> { // LDY #nn
+                y = fetchByte();
+                zeroFlag = y == 0;
+                negativeFlag = (y & 0x80) != 0;
+                return 2;
+            }
+            case (byte) 0xA4 -> { // LDY nn
+                y = memory.readByte(fetchByte());
+                zeroFlag = y == 0;
+                negativeFlag = (y & 0x80) != 0;
+                return 3;
+            }
+            case (byte) 0xB4 -> { // LDY nn,X
+                y = memory.readByte((short) (fetchByte() + x));
+                zeroFlag = y == 0;
+                negativeFlag = (y & 0x80) != 0;
+                return 4;
+            }
+            case (byte) 0xAC -> { // LDY nnnn
+                y = memory.readByte(fetchWord());
+                zeroFlag = y == 0;
+                negativeFlag = (y & 0x80) != 0;
+                return 4;
+            }
+            case (byte) 0xBC -> { // LDY nnnn,X
+                short absoluteAddress = fetchWord();
+                short effectiveAddress = (short) (absoluteAddress + x);
+                y = memory.readByte(effectiveAddress);
+                zeroFlag = y == 0;
+                negativeFlag = (y & 0x80) != 0;
+                if ((effectiveAddress & 0xFF00) != (absoluteAddress & 0xFF00)) {
+                    return 5;
+                } else {
+                    return 4;
+                }
+            }
             default -> throw new UnknownOpcodeException(opcode);
         }
     }

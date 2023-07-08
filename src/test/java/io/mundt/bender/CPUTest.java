@@ -221,4 +221,176 @@ public class CPUTest extends TestCase {
         assertTrue(cpu.negativeFlag); // N = true
         assertEquals(6, cycles); // 6 cycles
     }
+
+    public void testLDXImmediate() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0xA2); // LDX nn
+        memory.writeByte((short) 0x1235, (byte) 0x84); // nn = 0x84
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.x); // X = nn
+        assertFalse(cpu.zeroFlag); // Z = false
+        assertTrue(cpu.negativeFlag); // N = true
+        assertEquals(2, cycles); // 2 cycles
+    }
+
+    public void testLDXZeroPage() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0xA6); // LDX nn
+        memory.writeByte((short) 0x1235, (byte) 0x42); // nn = 0x42
+        memory.writeByte((short) 0x0042, (byte) 0x84); // 0x42 = 0x84
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.x); // X = [nn]
+        assertFalse(cpu.zeroFlag); // Z = false
+        assertTrue(cpu.negativeFlag); // N = true
+        assertEquals(3, cycles); // 3 cycles
+    }
+
+    public void testLDXZeroPageY() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0xB6); // LDX nn,Y
+        memory.writeByte((short) 0x1235, (byte) 0x42); // nn = 0x42
+        memory.writeByte((short) 0x0052, (byte) 0x84); // 0x52 = 0x84
+        cpu.y = 0x10;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.x); // X = [nn + Y]
+        assertFalse(cpu.zeroFlag); // Z = false
+        assertTrue(cpu.negativeFlag); // N = true
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testLDXAbsolute() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0xAE); // LDX nnnn
+        memory.writeWord((short) 0x1235, (short) 0x5678); // nnnn = 0x5678
+        memory.writeByte((short) 0x5678, (byte) 0x84); // 0x5678 = 0x84
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.x); // X = [nnnn]
+        assertFalse(cpu.zeroFlag); // Z = false
+        assertTrue(cpu.negativeFlag); // N = true
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testLDXAbsoluteYWithinPage() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0xBE); // LDX nnnn,Y
+        memory.writeWord((short) 0x1235, (short) 0x5678); // nnnn = 0x5678
+        memory.writeByte((short) 0x5688, (byte) 0x84); // 0x5688 = 0x84
+        cpu.y = 0x10;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.x); // X = [nnnn + Y]
+        assertFalse(cpu.zeroFlag); // Z = false
+        assertTrue(cpu.negativeFlag); // N = true
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testLDXAbsoluteYCrossingPage() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0xBE); // LDX nnnn,Y
+        memory.writeWord((short) 0x1235, (short) 0x56F0); // nnnn = 0x56F0
+        memory.writeByte((short) 0x5700, (byte) 0x84); // 0x5700 = 0x84
+        cpu.y = 0x10;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.x); // X = [nnnn + Y]
+        assertFalse(cpu.zeroFlag); // Z = false
+        assertTrue(cpu.negativeFlag); // N = true
+        assertEquals(5, cycles); // 5 cycles
+    }
+
+    public void testLDYImmediate() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0xA0); // LDY nn
+        memory.writeByte((short) 0x1235, (byte) 0x84); // nn = 0x84
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.y); // Y = nn
+        assertFalse(cpu.zeroFlag); // Z = false
+        assertTrue(cpu.negativeFlag); // N = true
+        assertEquals(2, cycles); // 2 cycles
+    }
+
+    public void testLDYZeroPage() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0xA4); // LDY nn
+        memory.writeByte((short) 0x1235, (byte) 0x42); // nn = 0x42
+        memory.writeByte((short) 0x0042, (byte) 0x84); // 0x42 = 0x84
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.y); // Y = [nn]
+        assertFalse(cpu.zeroFlag); // Z = false
+        assertTrue(cpu.negativeFlag); // N = true
+        assertEquals(3, cycles); // 3 cycles
+    }
+
+    public void testLDYZeroPageX() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0xB4); // LDY nn,X
+        memory.writeByte((short) 0x1235, (byte) 0x42); // nn = 0x42
+        memory.writeByte((short) 0x0052, (byte) 0x84); // 0x52 = 0x84
+        cpu.x = 0x10;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.y); // Y = [nn + X]
+        assertFalse(cpu.zeroFlag); // Z = false
+        assertTrue(cpu.negativeFlag); // N = true
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testLDYAbsolute() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0xAC); // LDY nnnn
+        memory.writeWord((short) 0x1235, (short) 0x5678); // nnnn = 0x5678
+        memory.writeByte((short) 0x5678, (byte) 0x84); // 0x5678 = 0x84
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.y); // Y = [nnnn]
+        assertFalse(cpu.zeroFlag); // Z = false
+        assertTrue(cpu.negativeFlag); // N = true
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testLDYAbsoluteXWithinPage() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0xBC); // LDY nnnn,X
+        memory.writeWord((short) 0x1235, (short) 0x5678); // nnnn = 0x5678
+        memory.writeByte((short) 0x5688, (byte) 0x84); // 0x5688 = 0x84
+        cpu.x = 0x10;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.y); // Y = [nnnn + X]
+        assertFalse(cpu.zeroFlag); // Z = false
+        assertTrue(cpu.negativeFlag); // N = true
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testLDYAbsoluteXCrossingPage() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0xBC); // LDY nnnn,X
+        memory.writeWord((short) 0x1235, (short) 0x56F0); // nnnn = 0x56F0
+        memory.writeByte((short) 0x5700, (byte) 0x84); // 0x5700 = 0x84
+        cpu.x = 0x10;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.y); // Y = [nnnn + X]
+        assertFalse(cpu.zeroFlag); // Z = false
+        assertTrue(cpu.negativeFlag); // N = true
+        assertEquals(5, cycles); // 5 cycles
+    }
 }
