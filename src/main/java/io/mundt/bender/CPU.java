@@ -233,6 +233,30 @@ public class CPU {
                 memory.writeByte(fetchWord(), y);
                 return 4;
             }
+            case (byte) 0xAA -> { // TAX
+                x = a;
+                zeroFlag = x == 0;
+                negativeFlag = (x & 0x80) != 0;
+                return 2;
+            }
+            case (byte) 0xA8 -> { // TAY
+                y = a;
+                zeroFlag = y == 0;
+                negativeFlag = (y & 0x80) != 0;
+                return 2;
+            }
+            case (byte) 0x8A -> { // TXA
+                a = x;
+                zeroFlag = a == 0;
+                negativeFlag = (a & 0x80) != 0;
+                return 2;
+            }
+            case (byte) 0x98 -> { // TYA
+                a = y;
+                zeroFlag = a == 0;
+                negativeFlag = (a & 0x80) != 0;
+                return 2;
+            }
             default -> throw new UnknownOpcodeException(opcode);
         }
     }

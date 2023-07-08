@@ -558,4 +558,48 @@ public class CPUTest extends TestCase {
         assertEquals((byte) 0x84, memory.readByte((short) 0x5678)); // [nnnn] = Y
         assertEquals(4, cycles); // 4 cycles
     }
+
+    public void testTAX() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0xAA); // TAX
+        cpu.a = (byte) 0x84;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.x); // X = A
+        assertEquals(2, cycles); // 2 cycles
+    }
+
+    public void testTAY() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0xA8); // TAY
+        cpu.a = (byte) 0x84;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.y); // Y = A
+        assertEquals(2, cycles); // 2 cycles
+    }
+
+    public void testTXA() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x8A); // TXA
+        cpu.x = (byte) 0x84;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.a); // A = X
+        assertEquals(2, cycles); // 2 cycles
+    }
+
+    public void testTYA() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x98); // TYA
+        cpu.y = (byte) 0x84;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, cpu.a); // A = Y
+        assertEquals(2, cycles); // 2 cycles
+    }
 }
