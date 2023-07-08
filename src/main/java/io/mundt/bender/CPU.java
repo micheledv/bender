@@ -32,7 +32,7 @@ public class CPU {
         return data;
     }
 
-    public int step() {
+    public int step() throws UnknownOpcodeException {
         byte opcode = fetchByte();
         switch (opcode) {
             case (byte) 0xA9 -> { // LDA #nn
@@ -104,7 +104,13 @@ public class CPU {
                     return 5;
                 }
             }
-            default -> throw new RuntimeException("Unknown opcode: " + opcode);
+            default -> throw new UnknownOpcodeException(opcode);
+        }
+    }
+
+    public static class UnknownOpcodeException extends Throwable {
+        public UnknownOpcodeException(byte opcode) {
+            super(String.format("Unknown opcode: %02X", opcode));
         }
     }
 }

@@ -1,5 +1,6 @@
 package io.mundt.bender;
 
+import io.mundt.bender.CPU.UnknownOpcodeException;
 import junit.framework.TestCase;
 
 public class CPUTest extends TestCase {
@@ -51,13 +52,13 @@ public class CPUTest extends TestCase {
         cpu.pc = (short) 0x1234;
         try {
             cpu.step();
-            fail("Expected RuntimeException");
-        } catch (RuntimeException e) {
-            assertEquals("Unknown opcode: 0", e.getMessage());
+            fail("Expected UnknownOpcodeException");
+        } catch (UnknownOpcodeException e) {
+            // pass
         }
     }
 
-    public void testLDAImmediate() {
+    public void testLDAImmediate() throws UnknownOpcodeException {
         memory.writeByte((short) 0x1234, (byte) 0xA9); // LDA #nn
         memory.writeByte((short) 0x1235, (byte) 0x42); // #nn = 0x42
 
@@ -70,7 +71,7 @@ public class CPUTest extends TestCase {
         assertEquals(2, cycles); // 2 cycles
     }
 
-    public void testLDAZeroPage() {
+    public void testLDAZeroPage() throws UnknownOpcodeException {
         memory.writeByte((short) 0x1234, (byte) 0xA5); // LDA nn
         memory.writeByte((short) 0x1235, (byte) 0x42); // nn = 0x42
         memory.writeByte((short) 0x0042, (byte) 0x84); // 0x42 = 0x84
@@ -84,7 +85,7 @@ public class CPUTest extends TestCase {
         assertEquals(3, cycles); // 3 cycles
     }
 
-    public void testLDAZeroPageX() {
+    public void testLDAZeroPageX() throws UnknownOpcodeException {
         memory.writeByte((short) 0x1234, (byte) 0xB5); // LDA nn,X
         memory.writeByte((short) 0x1235, (byte) 0x42); // nn = 0x42
         memory.writeByte((short) 0x0052, (byte) 0x84); // 0x42 = 0x84
@@ -99,7 +100,7 @@ public class CPUTest extends TestCase {
         assertEquals(4, cycles); // 4 cycles
     }
 
-    public void testLDAAbsolute() {
+    public void testLDAAbsolute() throws UnknownOpcodeException {
         memory.writeByte((short) 0x1234, (byte) 0xAD); // LDA nnnn
         memory.writeWord((short) 0x1235, (short) 0x5678); // nnnn = 0x5678
         memory.writeByte((short) 0x5678, (byte) 0x84); // 0x5678 = 0x84
@@ -113,7 +114,7 @@ public class CPUTest extends TestCase {
         assertEquals(4, cycles); // 4 cycles
     }
 
-    public void testLDAAbsoluteXWithinPage() {
+    public void testLDAAbsoluteXWithinPage() throws UnknownOpcodeException {
         memory.writeByte((short) 0x1234, (byte) 0xBD); // LDA nnnn,X
         memory.writeWord((short) 0x1235, (short) 0x5678); // nnnn = 0x5678
         memory.writeByte((short) 0x5688, (byte) 0x84); // 0x5678 = 0x84
@@ -128,7 +129,7 @@ public class CPUTest extends TestCase {
         assertEquals(4, cycles); // 4 cycles
     }
 
-    public void testLDAAbsoluteXCrossingPage() {
+    public void testLDAAbsoluteXCrossingPage() throws UnknownOpcodeException {
         memory.writeByte((short) 0x1234, (byte) 0xBD); // LDA nnnn,X
         memory.writeWord((short) 0x1235, (short) 0x56F0); // nnnn = 0x56F0
         memory.writeByte((short) 0x5700, (byte) 0x84); // 0x5700 = 0x84
@@ -143,7 +144,7 @@ public class CPUTest extends TestCase {
         assertEquals(5, cycles); // 5 cycles
     }
 
-    public void testLDAAbsoluteYWithinPage() {
+    public void testLDAAbsoluteYWithinPage() throws UnknownOpcodeException {
         memory.writeByte((short) 0x1234, (byte) 0xB9); // LDA nnnn,Y
         memory.writeWord((short) 0x1235, (short) 0x5678); // nnnn = 0x5678
         memory.writeByte((short) 0x5688, (byte) 0x84); // 0x5678 = 0x84
@@ -158,7 +159,7 @@ public class CPUTest extends TestCase {
         assertEquals(4, cycles); // 4 cycles
     }
 
-    public void testLDAAbsoluteYCrossingPage() {
+    public void testLDAAbsoluteYCrossingPage() throws UnknownOpcodeException {
         memory.writeByte((short) 0x1234, (byte) 0xB9); // LDA nnnn,Y
         memory.writeWord((short) 0x1235, (short) 0x56F0); // nnnn = 0x56F0
         memory.writeByte((short) 0x5700, (byte) 0x84); // 0x5700 = 0x84
@@ -173,7 +174,7 @@ public class CPUTest extends TestCase {
         assertEquals(5, cycles); // 5 cycles
     }
 
-    public void testLDAIndirectX() {
+    public void testLDAIndirectX() throws UnknownOpcodeException {
         memory.writeByte((short) 0x1234, (byte) 0xA1); // LDA (nn,X)
         memory.writeByte((short) 0x1235, (byte) 0x42); // nn = 0x42
         memory.writeWord((short) 0x0052, (short) 0x5678); // 0x52 = 0x5678
@@ -189,7 +190,7 @@ public class CPUTest extends TestCase {
         assertEquals(6, cycles); // 6 cycles
     }
 
-    public void testLDAIndirectYWithinPage() {
+    public void testLDAIndirectYWithinPage() throws UnknownOpcodeException {
         memory.writeByte((short) 0x1234, (byte) 0xB1); // LDA (nn),Y
         memory.writeByte((short) 0x1235, (byte) 0x42); // nn = 0x42
         memory.writeWord((short) 0x0042, (short) 0x5678); // 0x42 = 0x5678
@@ -205,7 +206,7 @@ public class CPUTest extends TestCase {
         assertEquals(5, cycles); // 5 cycles
     }
 
-    public void testLDAIndirectYCrossingPage() {
+    public void testLDAIndirectYCrossingPage() throws UnknownOpcodeException {
         memory.writeByte((short) 0x1234, (byte) 0xB1); // LDA (nn),Y
         memory.writeByte((short) 0x1235, (byte) 0x42); // nn = 0x42
         memory.writeWord((short) 0x0042, (short) 0x56F0); // 0x42 = 0x56F0
