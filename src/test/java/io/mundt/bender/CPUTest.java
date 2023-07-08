@@ -24,13 +24,13 @@ public class CPUTest extends TestCase {
         assertEquals(0, cpu.x);
         assertEquals(0, cpu.y);
 
-        assertFalse(cpu.carryFlag);
-        assertFalse(cpu.zeroFlag);
-        assertFalse(cpu.interruptDisableFlag);
-        assertFalse(cpu.decimalModeFlag);
-        assertFalse(cpu.breakCommandFlag);
-        assertFalse(cpu.overflowFlag);
-        assertFalse(cpu.negativeFlag);
+        assertFalse(cpu.carry);
+        assertFalse(cpu.zero);
+        assertFalse(cpu.interruptDisabled);
+        assertFalse(cpu.decimalMode);
+        assertFalse(cpu.breakCommand);
+        assertFalse(cpu.overflow);
+        assertFalse(cpu.negative);
     }
 
     public void testFetchByte() {
@@ -61,6 +61,28 @@ public class CPUTest extends TestCase {
         assertEquals((byte) 0xFF, cpu.sp);
     }
 
+    public void testGetStatus() {
+        cpu.carry = true;
+        cpu.zero = true;
+        cpu.interruptDisabled = true;
+        cpu.decimalMode = true;
+        cpu.breakCommand = true;
+        cpu.overflow = true;
+        cpu.negative = true;
+        assertEquals((byte) 0xDF, cpu.getStatus());
+    }
+
+    public void testSetStatus() {
+        cpu.setStatus((byte) 0xDF);
+        assertTrue(cpu.carry);
+        assertTrue(cpu.zero);
+        assertTrue(cpu.interruptDisabled);
+        assertTrue(cpu.decimalMode);
+        assertTrue(cpu.breakCommand);
+        assertTrue(cpu.overflow);
+        assertTrue(cpu.negative);
+    }
+
     public void testUnknownOpcode() {
         memory.writeByte((short) 0x1234, (byte) 0x00);
         cpu.pc = (short) 0x1234;
@@ -80,8 +102,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals(0x42, cpu.a); // A = #nn
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertFalse(cpu.negativeFlag); // N = false
+        assertFalse(cpu.zero); // Z = false
+        assertFalse(cpu.negative); // N = false
         assertEquals(2, cycles); // 2 cycles
     }
 
@@ -94,8 +116,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.a); // A = [nn]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(3, cycles); // 3 cycles
     }
 
@@ -109,8 +131,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.a); // A = [nn + X]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(4, cycles); // 4 cycles
     }
 
@@ -123,8 +145,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.a); // A = [nnnn]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(4, cycles); // 4 cycles
     }
 
@@ -138,8 +160,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.a); // A = [nnnn + X]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(4, cycles); // 4 cycles
     }
 
@@ -153,8 +175,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.a); // A = [nnnn + X]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(5, cycles); // 5 cycles
     }
 
@@ -168,8 +190,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.a); // A = [nnnn + Y]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(4, cycles); // 4 cycles
     }
 
@@ -183,8 +205,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.a); // A = [nnnn + Y]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(5, cycles); // 5 cycles
     }
 
@@ -199,8 +221,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.a); // A = [[nn + X]]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(6, cycles); // 6 cycles
     }
 
@@ -215,8 +237,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.a); // A = [[nn] + Y]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(5, cycles); // 5 cycles
     }
 
@@ -231,8 +253,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.a); // A = [[nn] + Y]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(6, cycles); // 6 cycles
     }
 
@@ -244,8 +266,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.x); // X = nn
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(2, cycles); // 2 cycles
     }
 
@@ -258,8 +280,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.x); // X = [nn]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(3, cycles); // 3 cycles
     }
 
@@ -273,8 +295,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.x); // X = [nn + Y]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(4, cycles); // 4 cycles
     }
 
@@ -287,8 +309,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.x); // X = [nnnn]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(4, cycles); // 4 cycles
     }
 
@@ -302,8 +324,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.x); // X = [nnnn + Y]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(4, cycles); // 4 cycles
     }
 
@@ -317,8 +339,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.x); // X = [nnnn + Y]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(5, cycles); // 5 cycles
     }
 
@@ -330,8 +352,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.y); // Y = nn
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(2, cycles); // 2 cycles
     }
 
@@ -344,8 +366,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.y); // Y = [nn]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(3, cycles); // 3 cycles
     }
 
@@ -359,8 +381,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.y); // Y = [nn + X]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(4, cycles); // 4 cycles
     }
 
@@ -373,8 +395,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.y); // Y = [nnnn]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(4, cycles); // 4 cycles
     }
 
@@ -388,8 +410,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.y); // Y = [nnnn + X]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(4, cycles); // 4 cycles
     }
 
@@ -403,8 +425,8 @@ public class CPUTest extends TestCase {
         int cycles = cpu.step();
 
         assertEquals((byte) 0x84, cpu.y); // Y = [nnnn + X]
-        assertFalse(cpu.zeroFlag); // Z = false
-        assertTrue(cpu.negativeFlag); // N = true
+        assertFalse(cpu.zero); // Z = false
+        assertTrue(cpu.negative); // N = true
         assertEquals(5, cycles); // 5 cycles
     }
 
