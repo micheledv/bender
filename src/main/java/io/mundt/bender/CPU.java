@@ -3,7 +3,9 @@ package io.mundt.bender;
 public class CPU {
     public final Memory memory;
 
-    public short pc, sp;
+    public short pc;
+
+    public byte sp;
 
     public byte a, x, y;
 
@@ -15,7 +17,7 @@ public class CPU {
 
     public void reset() {
         pc = memory.readWord((short) 0xFFFC);
-        sp = (short) 0x01FF;
+        sp = (byte) 0xFF;
         a = x = y = 0;
         carryFlag = zeroFlag = interruptDisableFlag = decimalModeFlag = breakCommandFlag = overflowFlag = negativeFlag = false;
     }

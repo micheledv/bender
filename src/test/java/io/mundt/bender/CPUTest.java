@@ -18,7 +18,7 @@ public class CPUTest extends TestCase {
         cpu.reset();
 
         assertEquals(0x1234, cpu.pc);
-        assertEquals(0x01FF, cpu.sp);
+        assertEquals((byte) 0xFF, cpu.sp);
 
         assertEquals(0, cpu.a);
         assertEquals(0, cpu.x);
