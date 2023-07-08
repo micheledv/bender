@@ -1,4 +1,4 @@
-package io.mundt;
+package io.mundt.bender;
 
 public class Memory {
     private final byte[] data = new byte[64 * 1024];

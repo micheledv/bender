@@ -1,4 +1,4 @@
-package io.mundt;
+package io.mundt.bender;
 
 public class CPU {
     public final Memory memory;

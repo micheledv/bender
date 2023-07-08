@@ -1,4 +1,4 @@
-package io.mundt;
+package io.mundt.bender;
 
 import junit.framework.TestCase;
 
