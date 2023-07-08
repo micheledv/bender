@@ -25,4 +25,11 @@ public class CPU {
         pc++;
         return data;
     }
+
+    public int step() {
+        byte opcode = fetchByte();
+        switch (opcode) {
+            default -> throw new RuntimeException("Unknown opcode: " + opcode);
+        }
+    }
 }

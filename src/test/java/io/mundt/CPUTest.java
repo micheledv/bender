@@ -38,4 +38,15 @@ public class CPUTest extends TestCase {
         assertEquals(0x56, cpu.fetchByte());
         assertEquals(0x1235, cpu.pc);
     }
+
+    public void testUnknownOpcode() {
+        memory.writeByte((short) 0x1234, (byte) 0x00);
+        cpu.pc = (short) 0x1234;
+        try {
+            cpu.step();
+            fail("Expected RuntimeException");
+        } catch (RuntimeException e) {
+            assertEquals("Unknown opcode: 0", e.getMessage());
+        }
+    }
 }
