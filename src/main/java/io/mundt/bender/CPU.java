@@ -34,6 +34,16 @@ public class CPU {
         return data;
     }
 
+    public void stackPush(byte value) {
+        memory.writeByte((short) (0x100 + (sp & 0xFF)), value);
+        sp--;
+    }
+
+    public byte stackPop() {
+        sp++;
+        return memory.readByte((short) (0x100 + (sp & 0xFF)));
+    }
+
     public int step() throws UnknownOpcodeException {
         byte opcode = fetchByte();
         switch (opcode) {

@@ -47,6 +47,20 @@ public class CPUTest extends TestCase {
         assertEquals(0x1236, cpu.pc);
     }
 
+    public void testStackPush() {
+        cpu.sp = (byte) 0xFF;
+        cpu.stackPush((byte) 0x42);
+        assertEquals((byte) 0xFE, cpu.sp);
+        assertEquals((byte) 0x42, memory.readByte((short) 0x01FF));
+    }
+
+    public void testStackPop() {
+        cpu.sp = (byte) 0xFE;
+        memory.writeByte((short) 0x01FF, (byte) 0x42);
+        assertEquals((byte) 0x42, cpu.stackPop());
+        assertEquals((byte) 0xFF, cpu.sp);
+    }
+
     public void testUnknownOpcode() {
         memory.writeByte((short) 0x1234, (byte) 0x00);
         cpu.pc = (short) 0x1234;
