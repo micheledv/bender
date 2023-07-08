@@ -176,6 +176,63 @@ public class CPU {
                     return 4;
                 }
             }
+            case (byte) 0x85 -> { // STA nn
+                memory.writeByte(fetchByte(), a);
+                return 3;
+            }
+            case (byte) 0x95 -> { // STA nn,X
+                memory.writeByte((short) (fetchByte() + x), a);
+                return 4;
+            }
+            case (byte) 0x8D -> { // STA nnnn
+                memory.writeByte(fetchWord(), a);
+                return 4;
+            }
+            case (byte) 0x9D -> { // STA nnnn,X
+                memory.writeByte((short) (fetchWord() + x), a);
+                return 5;
+            }
+            case (byte) 0x99 -> { // STA nnnn,Y
+                memory.writeByte((short) (fetchWord() + y), a);
+                return 5;
+            }
+            case (byte) 0x81 -> { // STA (nn,X)
+                short indirectAddress = (short) (fetchByte() + x);
+                short effectiveAddress = memory.readWord(indirectAddress);
+                memory.writeByte(effectiveAddress, a);
+                return 6;
+            }
+            case (byte) 0x91 -> { // STA (nn),Y
+                short indirectAddress = fetchByte();
+                short absoluteAddress = memory.readWord(indirectAddress);
+                short effectiveAddress = (short) (absoluteAddress + y);
+                memory.writeByte(effectiveAddress, a);
+                return 6;
+            }
+            case (byte) 0x86 -> { // STX nn
+                memory.writeByte(fetchByte(), x);
+                return 3;
+            }
+            case (byte) 0x96 -> { // STX nn,Y
+                memory.writeByte((short) (fetchByte() + y), x);
+                return 4;
+            }
+            case (byte) 0x8E -> { // STX nnnn
+                memory.writeByte(fetchWord(), x);
+                return 4;
+            }
+            case (byte) 0x84 -> { // STY nn
+                memory.writeByte(fetchByte(), y);
+                return 3;
+            }
+            case (byte) 0x94 -> { // STY nn,X
+                memory.writeByte((short) (fetchByte() + x), y);
+                return 4;
+            }
+            case (byte) 0x8C -> { // STY nnnn
+                memory.writeByte(fetchWord(), y);
+                return 4;
+            }
             default -> throw new UnknownOpcodeException(opcode);
         }
     }

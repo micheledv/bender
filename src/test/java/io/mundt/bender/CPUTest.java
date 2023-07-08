@@ -393,4 +393,169 @@ public class CPUTest extends TestCase {
         assertTrue(cpu.negativeFlag); // N = true
         assertEquals(5, cycles); // 5 cycles
     }
+
+    public void testSTAZeroPage() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x85); // STA nn
+        memory.writeByte((short) 0x1235, (byte) 0x42); // nn = 0x42
+        cpu.a = (byte) 0x84;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, memory.readByte((short) 0x0042)); // [nn] = A
+        assertEquals(3, cycles); // 3 cycles
+    }
+
+    public void testSTAZeroPageX() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x95); // STA nn,X
+        memory.writeByte((short) 0x1235, (byte) 0x42); // nn = 0x42
+        cpu.a = (byte) 0x84;
+        cpu.x = 0x10;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, memory.readByte((short) 0x0052)); // [nn + X] = A
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testSTAAbsolute() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x8D); // STA nnnn
+        memory.writeWord((short) 0x1235, (short) 0x5678); // nnnn = 0x5678
+        cpu.a = (byte) 0x84;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, memory.readByte((short) 0x5678)); // [nnnn] = A
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testSTAAbsoluteX() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x9D); // STA nnnn,X
+        memory.writeWord((short) 0x1235, (short) 0x5678); // nnnn = 0x5678
+        cpu.a = (byte) 0x84;
+        cpu.x = 0x10;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, memory.readByte((short) 0x5688)); // [nnnn + X] = A
+        assertEquals(5, cycles); // 5 cycles
+    }
+
+    public void testSTAAbsoluteY() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x99); // STA nnnn,Y
+        memory.writeWord((short) 0x1235, (short) 0x5678); // nnnn = 0x5678
+        cpu.a = (byte) 0x84;
+        cpu.y = 0x10;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, memory.readByte((short) 0x5688)); // [nnnn + Y] = A
+        assertEquals(5, cycles); // 5 cycles
+    }
+
+    public void testSTAIndirectX() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x81); // STA (nn,X)
+        memory.writeByte((short) 0x1235, (byte) 0x42); // nn = 0x42
+        memory.writeWord((short) 0x0052, (short) 0x5678); // 0x42 = 0x5678
+        cpu.a = (byte) 0x84;
+        cpu.x = 0x10;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, memory.readByte((short) 0x5678)); // [[nn + X]] = A
+        assertEquals(6, cycles); // 6 cycles
+    }
+
+    public void testSTAIndirectY() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x91); // STA (nn),Y
+        memory.writeByte((short) 0x1235, (byte) 0x42); // nn = 0x42
+        memory.writeWord((short) 0x42, (short) 0x5678); // 0x42 = 0x5678
+        cpu.a = (byte) 0x84;
+        cpu.y = 0x10;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, memory.readByte((short) 0x5688)); // [[nn] + Y] = A
+        assertEquals(6, cycles); // 6 cycles
+    }
+
+    public void testSTXZeroPage() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x86); // STX nn
+        memory.writeByte((short) 0x1235, (byte) 0x42); // nn = 0x42
+        cpu.x = (byte) 0x84;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, memory.readByte((short) 0x0042)); // [nn] = X
+        assertEquals(3, cycles); // 3 cycles
+    }
+
+    public void testSTXZeroPageY() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x96); // STX nn,Y
+        memory.writeByte((short) 0x1235, (byte) 0x42); // nn = 0x42
+        cpu.x = (byte) 0x84;
+        cpu.y = 0x10;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, memory.readByte((short) 0x0052)); // [nn + Y] = X
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testSTXAbsolute() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x8E); // STX nnnn
+        memory.writeWord((short) 0x1235, (short) 0x5678); // nnnn = 0x5678
+        cpu.x = (byte) 0x84;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, memory.readByte((short) 0x5678)); // [nnnn] = X
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testSTYZeroPage() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x84); // STY nn
+        memory.writeByte((short) 0x1235, (byte) 0x42); // nn = 0x42
+        cpu.y = (byte) 0x84;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, memory.readByte((short) 0x0042)); // [nn] = Y
+        assertEquals(3, cycles); // 3 cycles
+    }
+
+    public void testSTYZeroPageX() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x94); // STY nn,X
+        memory.writeByte((short) 0x1235, (byte) 0x42); // nn = 0x42
+        cpu.y = (byte) 0x84;
+        cpu.x = 0x10;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, memory.readByte((short) 0x0052)); // [nn + X] = Y
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testSTYAbsolute() throws UnknownOpcodeException {
+        memory.writeByte((short) 0x1234, (byte) 0x8C); // STY nnnn
+        memory.writeWord((short) 0x1235, (short) 0x5678); // nnnn = 0x5678
+        cpu.y = (byte) 0x84;
+
+        cpu.pc = (short) 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals((byte) 0x84, memory.readByte((short) 0x5678)); // [nnnn] = Y
+        assertEquals(4, cycles); // 4 cycles
+    }
 }
