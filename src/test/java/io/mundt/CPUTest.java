@@ -39,6 +39,13 @@ public class CPUTest extends TestCase {
         assertEquals(0x1235, cpu.pc);
     }
 
+    public void testFetchWord() {
+        memory.writeWord((short) 0x1234, (short) 0x5678);
+        cpu.pc = (short) 0x1234;
+        assertEquals(0x5678, cpu.fetchWord());
+        assertEquals(0x1236, cpu.pc);
+    }
+
     public void testUnknownOpcode() {
         memory.writeByte((short) 0x1234, (byte) 0x00);
         cpu.pc = (short) 0x1234;

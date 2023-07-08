@@ -26,6 +26,12 @@ public class CPU {
         return data;
     }
 
+    public short fetchWord() {
+        short data = memory.readWord(pc);
+        pc += 2;
+        return data;
+    }
+
     public int step() {
         byte opcode = fetchByte();
         switch (opcode) {
