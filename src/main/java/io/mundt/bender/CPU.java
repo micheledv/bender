@@ -30,35 +30,36 @@ public class CPU {
     }
 
     public void reset() {
-        pc = memory.readWord((short) 0xFFFC);
+        pc = (short) memory.readWord(0xFFFC);
         sp = (byte) 0xFF;
         a = x = y = 0;
         carry = zero = interruptDisabled = decimalMode = breakCommand = overflow = negative = false;
     }
 
-    public byte fetchByte() {
-        byte data = memory.readByte(pc);
+    public int fetchByte() {
+        int data = memory.readByte(pc);
         pc++;
         return data;
     }
 
-    public short fetchWord() {
-        short data = memory.readWord(pc);
+    public int fetchWord() {
+        int data = memory.readWord(pc);
         pc += 2;
         return data;
     }
 
-    public void stackPush(byte value) {
-        memory.writeByte((short) (0x100 + (sp & 0xFF)), value);
+    public void stackPush(int value) {
+        memory.writeByte((sp & 0xFF) + 0x100, value);
         sp--;
     }
 
-    public byte stackPop() {
+    public int stackPop() {
         sp++;
-        return memory.readByte((short) (0x100 + (sp & 0xFF)));
+        return memory.readByte((sp & 0xFF) + 0x100);
+
     }
 
-    public byte getStatus() {
+    public int getStatus() {
         byte status = 0;
         if (carry) {
             status |= CARRY_FLAG;
@@ -81,10 +82,10 @@ public class CPU {
         if (negative) {
             status |= NEGATIVE_FLAG;
         }
-        return status;
+        return status & 0xFF;
     }
 
-    public void setStatus(byte status) {
+    public void setStatus(int status) {
         carry = (status & CARRY_FLAG) != 0;
         zero = (status & ZERO_FLAG) != 0;
         interruptDisabled = (status & INTERRUPT_DISABLE_FLAG) != 0;
@@ -95,36 +96,36 @@ public class CPU {
     }
 
     public int step() throws UnknownOpcodeException {
-        byte opcode = fetchByte();
+        byte opcode = (byte) fetchByte();
         switch (opcode) {
             case (byte) 0xA9 -> { // LDA #nn
-                a = fetchByte();
+                a = (byte) fetchByte();
                 zero = a == 0;
                 negative = (a & 0x80) != 0;
                 return 2;
             }
             case (byte) 0xA5 -> { // LDA nn
-                a = memory.readByte(fetchByte());
+                a = (byte) memory.readByte(fetchByte());
                 zero = a == 0;
                 negative = (a & 0x80) != 0;
                 return 3;
             }
             case (byte) 0xB5 -> { // LDA nn,X
-                a = memory.readByte((short) (fetchByte() + x));
+                a = (byte) memory.readByte(fetchByte() + x);
                 zero = a == 0;
                 negative = (a & 0x80) != 0;
                 return 4;
             }
             case (byte) 0xAD -> { // LDA nnnn
-                a = memory.readByte(fetchWord());
+                a = (byte) memory.readByte(fetchWord());
                 zero = a == 0;
                 negative = (a & 0x80) != 0;
                 return 4;
             }
             case (byte) 0xBD -> { // LDA nnnn,X
-                short absoluteAddress = fetchWord();
-                short effectiveAddress = (short) (absoluteAddress + x);
-                a = memory.readByte(effectiveAddress);
+                int absoluteAddress = fetchWord();
+                int effectiveAddress = absoluteAddress + x;
+                a = (byte) memory.readByte(effectiveAddress);
                 zero = a == 0;
                 negative = (a & 0x80) != 0;
                 if ((effectiveAddress & 0xFF00) != (absoluteAddress & 0xFF00)) {
@@ -134,9 +135,9 @@ public class CPU {
                 }
             }
             case (byte) 0xB9 -> { // LDA nnnn,Y
-                short absoluteAddress = fetchWord();
-                short effectiveAddress = (short) (absoluteAddress + y);
-                a = memory.readByte(effectiveAddress);
+                int absoluteAddress = fetchWord();
+                int effectiveAddress = absoluteAddress + y;
+                a = (byte) memory.readByte(effectiveAddress);
                 zero = a == 0;
                 negative = (a & 0x80) != 0;
                 if ((effectiveAddress & 0xFF00) != (absoluteAddress & 0xFF00)) {
@@ -146,18 +147,18 @@ public class CPU {
                 }
             }
             case (byte) 0xA1 -> { // LDA (nn,X)
-                short indirectAddress = (short) (fetchByte() + x);
-                short effectiveAddress = memory.readWord(indirectAddress);
-                a = memory.readByte(effectiveAddress);
+                int indirectAddress = fetchByte() + x;
+                int effectiveAddress = memory.readWord(indirectAddress);
+                a = (byte) memory.readByte(effectiveAddress);
                 zero = a == 0;
                 negative = (a & 0x80) != 0;
                 return 6;
             }
             case (byte) 0xB1 -> { // LDA (nn),Y
-                short indirectAddress = fetchByte();
-                short absoluteAddress = memory.readWord(indirectAddress);
-                short effectiveAddress = (short) (absoluteAddress + y);
-                a = memory.readByte(effectiveAddress);
+                int indirectAddress = fetchByte();
+                int absoluteAddress = memory.readWord(indirectAddress);
+                int effectiveAddress = absoluteAddress + y;
+                a = (byte) memory.readByte(effectiveAddress);
                 zero = a == 0;
                 negative = (a & 0x80) != 0;
                 if ((effectiveAddress & 0xFF00) != (absoluteAddress & 0xFF00)) {
@@ -167,33 +168,33 @@ public class CPU {
                 }
             }
             case (byte) 0xA2 -> { // LDX #nn
-                x = fetchByte();
+                x = (byte) fetchByte();
                 zero = x == 0;
                 negative = (x & 0x80) != 0;
                 return 2;
             }
             case (byte) 0xA6 -> { // LDX nn
-                x = memory.readByte(fetchByte());
+                x = (byte) memory.readByte(fetchByte());
                 zero = x == 0;
                 negative = (x & 0x80) != 0;
                 return 3;
             }
             case (byte) 0xB6 -> { // LDX nn,Y
-                x = memory.readByte((short) (fetchByte() + y));
+                x = (byte) memory.readByte(fetchByte() + y);
                 zero = x == 0;
                 negative = (x & 0x80) != 0;
                 return 4;
             }
             case (byte) 0xAE -> { // LDX nnnn
-                x = memory.readByte(fetchWord());
+                x = (byte) memory.readByte(fetchWord());
                 zero = x == 0;
                 negative = (x & 0x80) != 0;
                 return 4;
             }
             case (byte) 0xBE -> { // LDX nnnn,Y
-                short absoluteAddress = fetchWord();
-                short effectiveAddress = (short) (absoluteAddress + y);
-                x = memory.readByte(effectiveAddress);
+                int absoluteAddress = fetchWord();
+                int effectiveAddress = absoluteAddress + y;
+                x = (byte) memory.readByte(effectiveAddress);
                 zero = x == 0;
                 negative = (x & 0x80) != 0;
                 if ((effectiveAddress & 0xFF00) != (absoluteAddress & 0xFF00)) {
@@ -203,33 +204,33 @@ public class CPU {
                 }
             }
             case (byte) 0xA0 -> { // LDY #nn
-                y = fetchByte();
+                y = (byte) fetchByte();
                 zero = y == 0;
                 negative = (y & 0x80) != 0;
                 return 2;
             }
             case (byte) 0xA4 -> { // LDY nn
-                y = memory.readByte(fetchByte());
+                y = (byte) memory.readByte(fetchByte());
                 zero = y == 0;
                 negative = (y & 0x80) != 0;
                 return 3;
             }
             case (byte) 0xB4 -> { // LDY nn,X
-                y = memory.readByte((short) (fetchByte() + x));
+                y = (byte) memory.readByte(fetchByte() + x);
                 zero = y == 0;
                 negative = (y & 0x80) != 0;
                 return 4;
             }
             case (byte) 0xAC -> { // LDY nnnn
-                y = memory.readByte(fetchWord());
+                y = (byte) memory.readByte(fetchWord());
                 zero = y == 0;
                 negative = (y & 0x80) != 0;
                 return 4;
             }
             case (byte) 0xBC -> { // LDY nnnn,X
-                short absoluteAddress = fetchWord();
-                short effectiveAddress = (short) (absoluteAddress + x);
-                y = memory.readByte(effectiveAddress);
+                int absoluteAddress = fetchWord();
+                int effectiveAddress = absoluteAddress + x;
+                y = (byte) memory.readByte(effectiveAddress);
                 zero = y == 0;
                 negative = (y & 0x80) != 0;
                 if ((effectiveAddress & 0xFF00) != (absoluteAddress & 0xFF00)) {
@@ -243,7 +244,7 @@ public class CPU {
                 return 3;
             }
             case (byte) 0x95 -> { // STA nn,X
-                memory.writeByte((short) (fetchByte() + x), a);
+                memory.writeByte(fetchByte() + x, a);
                 return 4;
             }
             case (byte) 0x8D -> { // STA nnnn
@@ -251,23 +252,23 @@ public class CPU {
                 return 4;
             }
             case (byte) 0x9D -> { // STA nnnn,X
-                memory.writeByte((short) (fetchWord() + x), a);
+                memory.writeByte(fetchWord() + x, a);
                 return 5;
             }
             case (byte) 0x99 -> { // STA nnnn,Y
-                memory.writeByte((short) (fetchWord() + y), a);
+                memory.writeByte(fetchWord() + y, a);
                 return 5;
             }
             case (byte) 0x81 -> { // STA (nn,X)
-                short indirectAddress = (short) (fetchByte() + x);
-                short effectiveAddress = memory.readWord(indirectAddress);
+                int indirectAddress = fetchByte() + x;
+                int effectiveAddress = memory.readWord(indirectAddress);
                 memory.writeByte(effectiveAddress, a);
                 return 6;
             }
             case (byte) 0x91 -> { // STA (nn),Y
-                short indirectAddress = fetchByte();
-                short absoluteAddress = memory.readWord(indirectAddress);
-                short effectiveAddress = (short) (absoluteAddress + y);
+                int indirectAddress = fetchByte();
+                int absoluteAddress = memory.readWord(indirectAddress);
+                int effectiveAddress = absoluteAddress + y;
                 memory.writeByte(effectiveAddress, a);
                 return 6;
             }
@@ -276,7 +277,7 @@ public class CPU {
                 return 3;
             }
             case (byte) 0x96 -> { // STX nn,Y
-                memory.writeByte((short) (fetchByte() + y), x);
+                memory.writeByte(fetchByte() + y, x);
                 return 4;
             }
             case (byte) 0x8E -> { // STX nnnn
@@ -288,7 +289,7 @@ public class CPU {
                 return 3;
             }
             case (byte) 0x94 -> { // STY nn,X
-                memory.writeByte((short) (fetchByte() + x), y);
+                memory.writeByte(fetchByte() + x, y);
                 return 4;
             }
             case (byte) 0x8C -> { // STY nnnn
@@ -338,7 +339,7 @@ public class CPU {
                 return 3;
             }
             case (byte) 0x68 -> { // PLA
-                a = stackPop();
+                a = (byte) stackPop();
                 zero = a == 0;
                 negative = (a & 0x80) != 0;
                 return 4;
@@ -354,13 +355,13 @@ public class CPU {
                 return 2;
             }
             case (byte) 0x25 -> { // AND nn
-                a &= memory.readByte((short) (fetchByte() & 0xFF));
+                a &= memory.readByte(fetchByte());
                 zero = a == 0;
                 negative = (a & 0x80) != 0;
                 return 3;
             }
             case (byte) 0x35 -> { // AND nn,X
-                a &= memory.readByte((short) ((fetchByte() & 0xFF) + x));
+                a &= memory.readByte(fetchByte() + x);
                 zero = a == 0;
                 negative = (a & 0x80) != 0;
                 return 4;
