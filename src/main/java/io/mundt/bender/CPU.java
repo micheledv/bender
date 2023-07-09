@@ -366,6 +366,57 @@ public class CPU {
                 negative = (a & 0x80) != 0;
                 return 4;
             }
+            case (byte) 0x2D -> { // AND nnnn
+                a &= memory.readByte(fetchWord());
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                return 4;
+            }
+            case (byte) 0x3D -> { // AND nnnn,X
+                int absoluteAddress = fetchWord();
+                int effectiveAddress = absoluteAddress + x;
+                a &= memory.readByte(effectiveAddress);
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                if ((effectiveAddress & 0xFF00) != (absoluteAddress & 0xFF00)) {
+                    return 5;
+                } else {
+                    return 4;
+                }
+            }
+            case (byte) 0x39 -> { // AND nnnn,Y
+                int absoluteAddress = fetchWord();
+                int effectiveAddress = absoluteAddress + y;
+                a &= memory.readByte(effectiveAddress);
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                if ((effectiveAddress & 0xFF00) != (absoluteAddress & 0xFF00)) {
+                    return 5;
+                } else {
+                    return 4;
+                }
+            }
+            case (byte) 0x21 -> { // AND (nn,X)
+                int indirectAddress = fetchByte() + x;
+                int effectiveAddress = memory.readWord(indirectAddress);
+                a &= memory.readByte(effectiveAddress);
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                return 6;
+            }
+            case (byte) 0x31 -> { // AND (nn),Y
+                int indirectAddress = fetchByte();
+                int absoluteAddress = memory.readWord(indirectAddress);
+                int effectiveAddress = absoluteAddress + y;
+                a &= memory.readByte(effectiveAddress);
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                if ((effectiveAddress & 0xFF00) != (absoluteAddress & 0xFF00)) {
+                    return 6;
+                } else {
+                    return 5;
+                }
+            }
             default -> throw new UnknownOpcodeException(opcode);
         }
     }

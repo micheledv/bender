@@ -763,4 +763,151 @@ public class CPUTest extends TestCase {
         assertFalse(cpu.zero); // Z = 0
         assertEquals(4, cycles); // 4 cycles
     }
+
+    public void testANDAbsolute() throws UnknownOpcodeException {
+        memory.writeByte(0x1234, 0x2D); // AND nnnn
+        memory.writeWord(0x1235, 0x5678); // nnnn = 0x5678
+        memory.writeByte(0x5678, 0x3C); // [nnnn] = 0x3C
+        cpu.a = (byte) 0xF0;
+        cpu.negative = true;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x30, cpu.a); // A = A & [nnnn]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testANDAbsoluteXWithinPage() throws UnknownOpcodeException {
+        memory.writeByte(0x1234, 0x3D); // AND nnnn,X
+        memory.writeWord(0x1235, 0x5678); // nnnn = 0x5678
+        memory.writeByte(0x5678 + 0x04, 0x3C); // [nnnn+X] = 0x3C
+        cpu.a = (byte) 0xF0;
+        cpu.x = 0x04;
+        cpu.negative = true;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x30, cpu.a); // A = A & [nnnn+X]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testANDAbsoluteXCrossingPage() throws UnknownOpcodeException {
+        memory.writeByte(0x1234, 0x3D); // AND nnnn,X
+        memory.writeWord(0x1235, 0x56FF); // nnnn = 0x56FF
+        memory.writeByte(0x5703, 0x3C); // [nnnn+X] = 0x3C
+        cpu.a = (byte) 0xF0;
+        cpu.x = 0x04;
+        cpu.negative = true;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x30, cpu.a); // A = A & [nnnn+X]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(5, cycles); // 5 cycles
+    }
+
+    public void testANDAbsoluteYWithinPage() throws UnknownOpcodeException {
+        memory.writeByte(0x1234, 0x39); // AND nnnn,Y
+        memory.writeWord(0x1235, 0x5678); // nnnn = 0x5678
+        memory.writeByte(0x5678 + 0x04, 0x3C); // [nnnn+Y] = 0x3C
+        cpu.a = (byte) 0xF0;
+        cpu.y = 0x04;
+        cpu.negative = true;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x30, cpu.a); // A = A & [nnnn+Y]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testANDAbsoluteYCrossingPage() throws UnknownOpcodeException {
+        memory.writeByte(0x1234, 0x39); // AND nnnn,Y
+        memory.writeWord(0x1235, 0x56FF); // nnnn = 0x56FF
+        memory.writeByte(0x5703, 0x3C); // [nnnn+Y] = 0x3C
+        cpu.a = (byte) 0xF0;
+        cpu.y = 0x04;
+        cpu.negative = true;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x30, cpu.a); // A = A & [nnnn+Y]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(5, cycles); // 5 cycles
+    }
+
+    public void testANDIndirectX() throws UnknownOpcodeException {
+        memory.writeByte(0x1234, 0x21); // AND (nn,X)
+        memory.writeByte(0x1235, 0x80); // nn = 0x80
+        memory.writeByte(0x0084, 0x78); // [nn+X] = 0x78
+        memory.writeByte(0x0085, 0x56); // [nn+X+1] = 0x56
+        memory.writeByte(0x5678, 0x3C); // [0x5678] = 0x3C
+        cpu.a = (byte) 0xF0;
+        cpu.x = 0x04;
+        cpu.negative = true;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x30, cpu.a); // A = A & [nn+X]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(6, cycles); // 6 cycles
+    }
+
+    public void testANDIndirectYWithinPage() throws UnknownOpcodeException {
+        cpu.y = 0x04;
+        memory.writeByte(0x1234, 0x31); // AND (nn),Y
+        memory.writeByte(0x1235, 0x80); // nn = 0x80
+        memory.writeWord(0x0080, 0x5678); // [nn] = 0x5678
+        memory.writeByte(0x5678 + cpu.y, 0x3C); // [nn+Y] = 0x3C
+        cpu.a = (byte) 0xF0;
+        cpu.negative = true;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x30, cpu.a); // A = A & [nn+Y]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(5, cycles); // 5 cycles
+    }
+
+    public void testANDIndirectYCrossingPage() throws UnknownOpcodeException {
+        cpu.y = 0x04;
+        memory.writeByte(0x1234, 0x31); // AND (nn),Y
+        memory.writeByte(0x1235, 0x80); // nn = 0x80
+        memory.writeWord(0x0080, 0x56FF); // [nn] = 0x56FF
+        memory.writeByte(0x56FF + cpu.y, 0x3C); // [nn+Y] = 0x3C
+        cpu.a = (byte) 0xF0;
+        cpu.negative = true;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x30, cpu.a); // A = A & [nn+Y]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(6, cycles); // 6 cycles
+    }
 }
