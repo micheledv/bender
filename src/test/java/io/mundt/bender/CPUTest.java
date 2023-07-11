@@ -1107,4 +1107,165 @@ public class CPUTest extends TestCase {
         assertFalse(cpu.zero); // Z = 0
         assertEquals(6, cycles); // 6 cycles
     }
+
+    public void testORAImmediate() throws UnknownOpcodeException {
+        memory.writeByte(0x1234, 0x09); // ORA #nn
+        memory.writeByte(0x1235, 0x88); // nn = 0x88
+        cpu.a = (byte) 0x77;
+        cpu.negative = false;
+        cpu.zero = false;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0xFF, cpu.a & 0xFF); // A = A | nn
+        assertTrue(cpu.negative); // N = 1
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(2, cycles); // 2 cycles
+    }
+
+    public void testORAZeroPage() throws UnknownOpcodeException {
+        memory.writeByte(0x1234, 0x05); // ORA nn
+        memory.writeByte(0x1235, 0x88); // nn = 0x88
+        memory.writeByte(0x0088, 0x77); // [nn] = 0x77
+        cpu.a = (byte) 0x77;
+        cpu.negative = true;
+        cpu.zero = false;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x77, cpu.a & 0xFF); // A = A | [nn]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(3, cycles); // 3 cycles
+    }
+
+    public void testORAZeroPageX() throws UnknownOpcodeException {
+        cpu.x = 0x04;
+        memory.writeByte(0x1234, 0x15); // ORA nn,X
+        memory.writeByte(0x1235, 0x88); // nn = 0x88
+        memory.writeByte(0x0088 + cpu.x, 0x77); // [nn+X] = 0x77
+        cpu.a = (byte) 0x77;
+        cpu.negative = true;
+        cpu.zero = false;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x77, cpu.a & 0xFF); // A = A | [nn+X]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testORAAbsolute() throws UnknownOpcodeException {
+        memory.writeByte(0x1234, 0x0D); // ORA nnnn
+        memory.writeWord(0x1235, 0x5678); // nnnn = 0x5678
+        memory.writeByte(0x5678, 0x77); // [nnnn] = 0x77
+        cpu.a = (byte) 0x77;
+        cpu.negative = true;
+        cpu.zero = false;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x77, cpu.a & 0xFF); // A = A | [nnnn]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testORAAbsoluteXWithinPage() throws UnknownOpcodeException {
+        cpu.x = 0x04;
+        memory.writeByte(0x1234, 0x1D); // ORA nnnn,X
+        memory.writeWord(0x1235, 0x5678); // nnnn = 0x5678
+        memory.writeByte(0x5678 + cpu.x, 0x77); // [nnnn+X] = 0x77
+        cpu.a = (byte) 0x77;
+        cpu.negative = true;
+        cpu.zero = false;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x77, cpu.a & 0xFF); // A = A | [nnnn+X]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testORAAbsoluteXCrossingPage() throws UnknownOpcodeException {
+        cpu.x = (byte) 0xFF;
+        memory.writeByte(0x1234, 0x1D); // ORA nnnn,X
+        memory.writeWord(0x1235, 0x56FF); // nnnn = 0x56FF
+        memory.writeByte(0x56FF + cpu.x, 0x77); // [nnnn+X] = 0x77
+        cpu.a = (byte) 0x77;
+        cpu.negative = true;
+        cpu.zero = false;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x77, cpu.a & 0xFF); // A = A | [nnnn+X]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(5, cycles); // 5 cycles
+    }
+
+    public void testORAIndirectX() throws UnknownOpcodeException {
+        cpu.x = 0x04;
+        memory.writeByte(0x1234, 0x01); // ORA (nn,X)
+        memory.writeByte(0x1235, 0x88); // nn = 0x88
+        memory.writeWord(0x0088 + cpu.x, 0x5678); // [nn+X] = 0x5678
+        memory.writeByte(0x5678, 0x77); // [0x5678] = 0x77
+        cpu.a = (byte) 0x77;
+        cpu.negative = true;
+        cpu.zero = false;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x77, cpu.a & 0xFF); // A = A | [nn+X]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(6, cycles); // 6 cycles
+    }
+
+    public void testORAIndirectYWithinPage() throws UnknownOpcodeException {
+        cpu.y = 0x04;
+        memory.writeByte(0x1234, 0x11); // ORA (nn),Y
+        memory.writeByte(0x1235, 0x88); // nn = 0x88
+        memory.writeWord(0x0088, 0x5678); // [nn] = 0x5678
+        memory.writeByte(0x5678 + cpu.y, 0x77); // [0x5678+Y] = 0x77
+        cpu.a = (byte) 0x77;
+        cpu.negative = true;
+        cpu.zero = false;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x77, cpu.a & 0xFF); // A = A | [nn]+Y
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(5, cycles); // 5 cycles
+    }
+
+    public void testORAIndirectYCrossingPage() throws UnknownOpcodeException {
+        cpu.y = (byte) 0xFF;
+        memory.writeByte(0x1234, 0x11); // ORA (nn),Y
+        memory.writeByte(0x1235, 0x88); // nn = 0x88
+        memory.writeWord(0x0088, 0x56FF); // [nn] = 0x56FF
+        memory.writeByte(0x56FF + cpu.y, 0x77); // [0x56FF+Y] = 0x77
+        cpu.a = (byte) 0x77;
+        cpu.negative = true;
+        cpu.zero = false;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x77, cpu.a & 0xFF); // A = A | [nn]+Y
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(6, cycles); // 6 cycles
+    }
 }

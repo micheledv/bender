@@ -486,6 +486,75 @@ public class CPU {
                     return 5;
                 }
             }
+            case (byte) 0x09 -> { // ORA #nn
+                a |= fetchByte();
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                return 2;
+            }
+            case (byte) 0x05 -> { // ORA nn
+                a |= memory.readByte(fetchByte());
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                return 3;
+            }
+            case (byte) 0x15 -> { // ORA nn,X
+                a |= memory.readByte(fetchByte() + x);
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                return 4;
+            }
+            case (byte) 0x0D -> { // ORA nnnn
+                a |= memory.readByte(fetchWord());
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                return 4;
+            }
+            case (byte) 0x1D -> { // ORA nnnn,X
+                int absoluteAddress = fetchWord();
+                int effectiveAddress = absoluteAddress + (x & 0xFF);
+                a |= memory.readByte(effectiveAddress);
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                if ((effectiveAddress & 0xFF00) != (absoluteAddress & 0xFF00)) {
+                    return 5;
+                } else {
+                    return 4;
+                }
+            }
+            case (byte) 0x19 -> { // ORA nnnn,Y
+                int absoluteAddress = fetchWord();
+                int effectiveAddress = absoluteAddress + (y & 0xFF);
+                a |= memory.readByte(effectiveAddress);
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                if ((effectiveAddress & 0xFF00) != (absoluteAddress & 0xFF00)) {
+                    return 5;
+                } else {
+                    return 4;
+                }
+            }
+            case (byte) 0x01 -> { // ORA (nn,X)
+                int indirectAddress = fetchByte() + x;
+                int effectiveAddress = memory.readWord(indirectAddress);
+                a |= memory.readByte(effectiveAddress);
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                return 6;
+            }
+            case (byte) 0x11 -> { // ORA (nn),Y
+                int indirectAddress = fetchByte();
+                int absoluteAddress = memory.readWord(indirectAddress);
+                int effectiveAddress = absoluteAddress + (y & 0xFF);
+                a |= memory.readByte(effectiveAddress);
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                if ((effectiveAddress & 0xFF00) != (absoluteAddress & 0xFF00)) {
+                    return 6;
+                } else {
+                    return 5;
+                }
+            }
             default -> throw new UnknownOpcodeException(opcode);
         }
     }
