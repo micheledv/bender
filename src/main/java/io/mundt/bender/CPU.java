@@ -417,6 +417,75 @@ public class CPU {
                     return 5;
                 }
             }
+            case (byte) 0x49 -> { // EOR #nn
+                a ^= fetchByte();
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                return 2;
+            }
+            case (byte) 0x45 -> { // EOR nn
+                a ^= memory.readByte(fetchByte());
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                return 3;
+            }
+            case (byte) 0x55 -> { // EOR nn,X
+                a ^= memory.readByte(fetchByte() + x);
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                return 4;
+            }
+            case (byte) 0x4D -> { // EOR nnnn
+                a ^= memory.readByte(fetchWord());
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                return 4;
+            }
+            case (byte) 0x5D -> { // EOR nnnn,X
+                int absoluteAddress = fetchWord();
+                int effectiveAddress = absoluteAddress + x;
+                a ^= memory.readByte(effectiveAddress);
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                if ((effectiveAddress & 0xFF00) != (absoluteAddress & 0xFF00)) {
+                    return 5;
+                } else {
+                    return 4;
+                }
+            }
+            case (byte) 0x59 -> { // EOR nnnn,Y
+                int absoluteAddress = fetchWord();
+                int effectiveAddress = absoluteAddress + y;
+                a ^= memory.readByte(effectiveAddress);
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                if ((effectiveAddress & 0xFF00) != (absoluteAddress & 0xFF00)) {
+                    return 5;
+                } else {
+                    return 4;
+                }
+            }
+            case (byte) 0x41 -> { // EOR (nn,X)
+                int indirectAddress = fetchByte() + x;
+                int effectiveAddress = memory.readWord(indirectAddress);
+                a ^= memory.readByte(effectiveAddress);
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                return 6;
+            }
+            case (byte) 0x51 -> { // EOR (nn),Y
+                int indirectAddress = fetchByte();
+                int absoluteAddress = memory.readWord(indirectAddress);
+                int effectiveAddress = absoluteAddress + y;
+                a ^= memory.readByte(effectiveAddress);
+                zero = a == 0;
+                negative = (a & 0x80) != 0;
+                if ((effectiveAddress & 0xFF00) != (absoluteAddress & 0xFF00)) {
+                    return 6;
+                } else {
+                    return 5;
+                }
+            }
             default -> throw new UnknownOpcodeException(opcode);
         }
     }

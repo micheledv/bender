@@ -910,4 +910,201 @@ public class CPUTest extends TestCase {
         assertFalse(cpu.zero); // Z = 0
         assertEquals(6, cycles); // 6 cycles
     }
+
+    public void testEORImmediate() throws UnknownOpcodeException {
+        memory.writeByte(0x1234, 0x49); // EOR #nn
+        memory.writeByte(0x1235, 0x3C); // nn = 0x3C
+        cpu.a = (byte) 0xF0;
+        cpu.negative = false;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0xCC, cpu.a & 0xFF); // A = A ^ nn
+        assertTrue(cpu.negative); // N = 1
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(2, cycles); // 2 cycles
+    }
+
+    public void testEORZeroPage() throws UnknownOpcodeException {
+        memory.writeByte(0x1234, 0x45); // EOR nn
+        memory.writeByte(0x1235, 0x3C); // nn = 0x3C
+        memory.writeByte(0x003C, 0x78); // [nn] = 0x78
+        cpu.a = (byte) 0xF0;
+        cpu.negative = false;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x88, cpu.a & 0xFF); // A = A ^ [nn]
+        assertTrue(cpu.negative); // N = 1
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(3, cycles); // 3 cycles
+    }
+
+    public void testEORZeroPageX() throws UnknownOpcodeException {
+        cpu.x = 0x04;
+        memory.writeByte(0x1234, 0x55); // EOR nn,X
+        memory.writeByte(0x1235, 0x3C); // nn = 0x3C
+        memory.writeByte(0x003C + cpu.x, 0x78); // [nn+X] = 0x78
+        cpu.a = (byte) 0xF0;
+        cpu.negative = false;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x88, cpu.a & 0xFF); // A = A ^ [nn+X]
+        assertTrue(cpu.negative); // N = 1
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testEORAbsolute() throws UnknownOpcodeException {
+        memory.writeByte(0x1234, 0x4D); // EOR nnnn
+        memory.writeWord(0x1235, 0x5678); // nnnn = 0x5678
+        memory.writeByte(0x5678, 0x78); // [nnnn] = 0x78
+        cpu.a = (byte) 0xF0;
+        cpu.negative = false;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x88, cpu.a & 0xFF); // A = A ^ [nnnn]
+        assertTrue(cpu.negative); // N = 1
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testEORAbsoluteXWithinPage() throws UnknownOpcodeException {
+        cpu.x = 0x04;
+        memory.writeByte(0x1234, 0x5D); // EOR nnnn,X
+        memory.writeWord(0x1235, 0x5678); // nnnn = 0x5678
+        memory.writeByte(0x5678 + cpu.x, 0x78); // [nnnn+X] = 0x78
+        cpu.a = (byte) 0xF0;
+        cpu.negative = false;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x88, cpu.a & 0xFF); // A = A ^ [nnnn+X]
+        assertTrue(cpu.negative); // N = 1
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testEORAbsoluteXCrossingPage() throws UnknownOpcodeException {
+        cpu.x = 0x04;
+        memory.writeByte(0x1234, 0x5D); // EOR nnnn,X
+        memory.writeWord(0x1235, 0x56FF); // nnnn = 0x56FF
+        memory.writeByte(0x56FF + cpu.x, 0x78); // [nnnn+X] = 0x78
+        cpu.a = (byte) 0xF0;
+        cpu.negative = false;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x88, cpu.a & 0xFF); // A = A ^ [nnnn+X]
+        assertTrue(cpu.negative); // N = 1
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(5, cycles); // 5 cycles
+    }
+
+    public void testEORAbsoluteYWithinPage() throws UnknownOpcodeException {
+        cpu.y = 0x04;
+        memory.writeByte(0x1234, 0x59); // EOR nnnn,Y
+        memory.writeWord(0x1235, 0x5678); // nnnn = 0x5678
+        memory.writeByte(0x5678 + cpu.y, 0x78); // [nnnn+Y] = 0x78
+        cpu.a = (byte) 0xF0;
+        cpu.negative = false;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x88, cpu.a & 0xFF); // A = A ^ [nnnn+Y]
+        assertTrue(cpu.negative); // N = 1
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(4, cycles); // 4 cycles
+    }
+
+    public void testEORAbsoluteYCrossingPage() throws UnknownOpcodeException {
+        cpu.y = 0x04;
+        memory.writeByte(0x1234, 0x59); // EOR nnnn,Y
+        memory.writeWord(0x1235, 0x56FF); // nnnn = 0x56FF
+        memory.writeByte(0x56FF + cpu.y, 0x78); // [nnnn+Y] = 0x78
+        cpu.a = (byte) 0xF0;
+        cpu.negative = false;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x88, cpu.a & 0xFF); // A = A ^ [nnnn+Y]
+        assertTrue(cpu.negative); // N = 1
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(5, cycles); // 5 cycles
+    }
+
+    public void testEORIndirectX() throws UnknownOpcodeException {
+        cpu.x = 0x04;
+        memory.writeByte(0x1234, 0x41); // EOR (nn,X)
+        memory.writeByte(0x1235, 0x38); // nn = 0x38
+        memory.writeByte(0x0038 + cpu.x, 0x78); // [nn+X] = 0x78
+        memory.writeByte(0x0078, 0x99); // [0x78] = 0x99
+        cpu.a = (byte) 0xF0;
+        cpu.negative = true;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x69, cpu.a & 0xFF); // A = A ^ [nn+X]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(6, cycles); // 6 cycles
+    }
+
+    public void testEORIndirectYWithinPage() throws UnknownOpcodeException {
+        cpu.y = 0x04;
+        memory.writeByte(0x1234, 0x51); // EOR (nn),Y
+        memory.writeByte(0x1235, 0x38); // nn = 0x38
+        memory.writeByte(0x0038, 0x78); // [nn] = 0x78
+        memory.writeByte(0x0078 + cpu.y, 0x99); // [nn+Y] = 0x99
+        cpu.a = (byte) 0xF0;
+        cpu.negative = true;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x69, cpu.a & 0xFF); // A = A ^ [nn+Y]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(5, cycles); // 5 cycles
+    }
+
+    public void testEORIndirectYCrossingPage() throws UnknownOpcodeException {
+        cpu.y = (byte) 0xFF;
+        memory.writeByte(0x1234, 0x51); // EOR (nn),Y
+        memory.writeByte(0x1235, 0x38); // nn = 0x38
+        memory.writeWord(0x0038, 0x5678); // [nn] = 0x5678
+        memory.writeByte(0x5678 + (cpu.y & 0xFF), 0x99); // [nn+Y] = 0x99
+        cpu.a = (byte) 0xF0;
+        cpu.negative = true;
+        cpu.zero = true;
+
+        cpu.pc = 0x1234;
+        int cycles = cpu.step();
+
+        assertEquals(0x69, cpu.a & 0xFF); // A = A ^ [nn+Y]
+        assertFalse(cpu.negative); // N = 0
+        assertFalse(cpu.zero); // Z = 0
+        assertEquals(6, cycles); // 6 cycles
+    }
 }
