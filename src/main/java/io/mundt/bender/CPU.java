@@ -476,7 +476,7 @@ public class CPU {
             case (byte) 0x51 -> { // EOR (nn),Y
                 int indirectAddress = fetchByte();
                 int absoluteAddress = memory.readWord(indirectAddress);
-                int effectiveAddress = absoluteAddress + y;
+                int effectiveAddress = absoluteAddress + (y & 0xFF);
                 a ^= memory.readByte(effectiveAddress);
                 zero = a == 0;
                 negative = (a & 0x80) != 0;
